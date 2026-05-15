@@ -1,22 +1,11 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/shared/SiteHeader";
 import { BottomNavCustomer } from "@/components/shared/BottomNavCustomer";
 
-export default async function CustomerLayout({
+export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-[#FFF5F8] via-[#FFE4EC] to-[#FFD1DC]/40">
       <SiteHeader showCart />

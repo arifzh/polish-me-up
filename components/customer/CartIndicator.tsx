@@ -26,12 +26,12 @@ export function CartIndicator() {
   return (
     <Link
       href="/order"
-      className="relative inline-flex items-center justify-center rounded-md p-2 text-[#2D2D2D] hover:bg-[#FDF2F4]"
+      className="relative inline-flex items-center justify-center rounded-md p-2 text-[#3D1A2A] hover:bg-[#FFF5F8]"
       aria-label={count > 0 ? `Cart with ${count} items` : "Cart"}
     >
       <ShoppingBag className="size-5" />
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E91E63] px-1 text-[10px] font-semibold text-white">
+        <span className="absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#EC4899] px-1 text-[10px] font-semibold text-white">
           {count}
         </span>
       )}

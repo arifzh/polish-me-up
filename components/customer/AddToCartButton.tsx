@@ -26,10 +26,19 @@ export function AddToCartButton({
     <Button
       type="button"
       onClick={handleAdd}
-      className="w-full bg-[#E91E63] text-white hover:bg-[#C2185B]"
+      aria-live="polite"
+      className={`group/cta w-full rounded-full font-semibold text-white shadow-[0_4px_14px_-4px_rgba(236,72,153,0.6)] transition-all duration-200 ${
+        justAdded
+          ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+          : "bg-gradient-to-r from-[#EC4899] to-[#DB2777] hover:from-[#DB2777] hover:to-[#BE185D] hover:shadow-[0_8px_20px_-4px_rgba(236,72,153,0.7)]"
+      }`}
     >
-      {justAdded ? <Check /> : <Plus />}
-      {justAdded ? "Added" : label}
+      {justAdded ? (
+        <Check className="size-4" />
+      ) : (
+        <Plus className="size-4 transition-transform group-hover/cta:rotate-90" />
+      )}
+      {justAdded ? "Added to cart" : label}
     </Button>
   );
 }
