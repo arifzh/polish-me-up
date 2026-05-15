@@ -29,7 +29,7 @@ function SourceBadge({ source }: { source: Customer["source"] }) {
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
         isSystem
-          ? "bg-[#FDF2F4] text-[#E91E63] ring-1 ring-[#F8BBD0]"
+          ? "bg-[#FFF5F8] text-[#EC4899] ring-1 ring-[#F8BBD0]"
           : "bg-muted text-muted-foreground ring-1 ring-border",
       )}
     >
@@ -43,18 +43,18 @@ const columns: ColumnDef<Customer>[] = [
     key: "full_name",
     header: "Name",
     cell: (row) => (
-      <span className="font-medium text-[#2D2D2D]">{row.full_name}</span>
+      <span className="font-medium text-[#3D1A2A]">{row.full_name}</span>
     ),
   },
   {
     key: "phone",
     header: "Phone",
-    cell: (row) => row.phone ?? "—",
+    cell: (row) => row.phone ?? "-",
   },
   {
     key: "email",
     header: "Email",
-    cell: (row) => row.email ?? "—",
+    cell: (row) => row.email ?? "-",
   },
   {
     key: "total_visits",
@@ -77,7 +77,7 @@ const columns: ColumnDef<Customer>[] = [
     cell: (row) =>
       row.created_at
         ? dateFormatter.format(new Date(row.created_at))
-        : "—",
+        : "-",
   },
 ];
 
@@ -95,6 +95,52 @@ export function CustomersTable({ customers }: { customers: Customer[] }) {
             View
           </Link>
         </Button>
+      )}
+      mobileCard={(row) => (
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-[#3D1A2A]">
+                {row.full_name}
+              </p>
+              {row.phone && (
+                <p className="text-xs text-[#5C2D48]/70">{row.phone}</p>
+              )}
+              {row.email && (
+                <p className="truncate text-xs text-[#5C2D48]/70">{row.email}</p>
+              )}
+            </div>
+            <SourceBadge source={row.source} />
+          </div>
+          <div className="grid grid-cols-3 gap-2 rounded-lg bg-[#FFF5F8]/60 px-3 py-2 text-center">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C2D48]/70">
+                Visits
+              </p>
+              <p className="text-sm font-semibold text-[#3D1A2A]">
+                {row.total_visits ?? 0}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C2D48]/70">
+                Spent
+              </p>
+              <p className="text-sm font-semibold text-[#3D1A2A]">
+                {currency.format(Number(row.total_spent ?? 0))}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C2D48]/70">
+                Added
+              </p>
+              <p className="text-sm font-semibold text-[#3D1A2A]">
+                {row.created_at
+                  ? dateFormatter.format(new Date(row.created_at))
+                  : "-"}
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     />
   );

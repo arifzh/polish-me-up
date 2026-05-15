@@ -4,6 +4,7 @@ import { CheckCircle2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ItemsTable } from "@/components/manicurist/ItemsTable";
 import { ExportItemsButton } from "@/components/manicurist/ExportItemsButton";
+import { PageHeader } from "@/components/manicurist/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ItemsPage({
@@ -25,39 +26,35 @@ export default async function ItemsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-[#2D2D2D]">
-            Items
-          </h1>
-          <p className="text-muted-foreground">
-            {packageCount} {packageCount === 1 ? "package" : "packages"},{" "}
-            {addonCount} {addonCount === 1 ? "add-on" : "add-ons"}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportItemsButton />
-          <Button
-            asChild
-            className="bg-[#E91E63] text-white hover:bg-[#C2185B]"
-          >
-            <Link href="/items/new">
-              <Plus />
-              Add Item
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Items"
+        subtitle={`${packageCount} ${packageCount === 1 ? "package" : "packages"}, ${addonCount} ${addonCount === 1 ? "add-on" : "add-ons"}`}
+        actions={
+          <>
+            <ExportItemsButton />
+            <Button
+              asChild
+              className="bg-gradient-to-r from-[#EC4899] to-[#DB2777] text-white shadow-md hover:from-[#DB2777] hover:to-[#BE185D]"
+            >
+              <Link href="/items/new" aria-label="Add item">
+                <Plus />
+                <span className="hidden sm:inline">Add Item</span>
+                <span className="sm:hidden">Add</span>
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       {params.added === "true" && (
-        <div className="flex items-center gap-2 rounded-lg border border-[#F8BBD0] bg-[#FDF2F4] px-3 py-2 text-sm text-[#E91E63]">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           <CheckCircle2 className="size-4" />
           Item added successfully.
         </div>
       )}
 
       {params.updated === "true" && (
-        <div className="flex items-center gap-2 rounded-lg border border-[#F8BBD0] bg-[#FDF2F4] px-3 py-2 text-sm text-[#E91E63]">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           <CheckCircle2 className="size-4" />
           Item updated successfully.
         </div>

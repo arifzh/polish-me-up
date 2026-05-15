@@ -36,6 +36,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ImageDropzone } from "@/components/manicurist/ImageDropzone";
 import { itemSchema, type ItemInput } from "@/lib/validations/item.schema";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/types/database.types";
@@ -60,7 +61,14 @@ export function EditItemForm({ item }: { item: Item }) {
       stock: item.stock ?? null,
       duration_min: item.duration_min ?? null,
       is_active: item.is_active ?? true,
-      photo_url: item.photo_url ?? "",
+      // Hydrate from photo_urls; fall back to the legacy single-photo
+      // column so items created before the multi-image migration still
+      // surface their image in the dropzone.
+      photo_urls: (() => {
+        const list = (item.photo_urls ?? []).filter(Boolean);
+        if (list.length > 0) return list;
+        return item.photo_url ? [item.photo_url] : [];
+      })(),
     },
   });
 
@@ -78,7 +86,8 @@ export function EditItemForm({ item }: { item: Item }) {
         stock: values.stock ?? null,
         duration_min: values.duration_min ?? null,
         is_active: values.is_active,
-        photo_url: values.photo_url ?? null,
+        photo_urls: values.photo_urls ?? [],
+        photo_url: values.photo_urls?.[0] ?? null,
       })
       .eq("id", item.id);
 
@@ -116,15 +125,15 @@ export function EditItemForm({ item }: { item: Item }) {
       <div className="space-y-2">
         <Link
           href="/items"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#E91E63]"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#EC4899]"
         >
           <ArrowLeft className="size-4" />
           Back to items
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#2D2D2D]">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#3D1A2A] sm:text-3xl">
           Edit Item
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground sm:text-base">
           Update the details of this {item.category === "package" ? "package" : "add-on"}.
         </p>
       </div>
@@ -132,7 +141,7 @@ export function EditItemForm({ item }: { item: Item }) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-5 rounded-xl border border-[#F8BBD0] bg-white p-6"
+          className="space-y-5 rounded-xl border border-[#F8BBD0] bg-white p-4 sm:p-6"
         >
           <FormField
             control={form.control}
@@ -199,6 +208,7 @@ export function EditItemForm({ item }: { item: Item }) {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       min={0}
                       step="0.01"
                       {...field}
@@ -223,6 +233,7 @@ export function EditItemForm({ item }: { item: Item }) {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       min={0}
                       step="0.01"
                       {...field}
@@ -250,6 +261,7 @@ export function EditItemForm({ item }: { item: Item }) {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min={1}
                       step={1}
                       {...field}
@@ -277,6 +289,7 @@ export function EditItemForm({ item }: { item: Item }) {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min={1}
                       step={1}
                       {...field}
@@ -296,20 +309,19 @@ export function EditItemForm({ item }: { item: Item }) {
 
           <FormField
             control={form.control}
-            name="photo_url"
+            name="photo_urls"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Photo URL</FormLabel>
+                <FormLabel>Photos</FormLabel>
                 <FormControl>
-                  <Input
-                    type="url"
-                    placeholder="https://…"
-                    {...field}
-                    value={field.value ?? ""}
+                  <ImageDropzone
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    max={3}
                   />
                 </FormControl>
                 <FormDescription>
-                  Paste image URL (Supabase Storage upload coming later).
+                  Up to 3 images. The first photo is shown as the cover.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -326,7 +338,7 @@ export function EditItemForm({ item }: { item: Item }) {
                     type="checkbox"
                     checked={!!field.value}
                     onChange={(e) => field.onChange(e.target.checked)}
-                    className="h-4 w-4 rounded border-input accent-[#E91E63]"
+                    className="h-5 w-5 rounded border-input accent-[#EC4899] md:h-4 md:w-4"
                   />
                 </FormControl>
                 <FormLabel className="!mt-0 font-normal">
@@ -340,10 +352,10 @@ export function EditItemForm({ item }: { item: Item }) {
             <p className="text-sm text-destructive">{submitError}</p>
           )}
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <Dialog>
               <DialogTrigger asChild>
-                <Button type="button" variant="destructive">
+                <Button type="button" variant="destructive" className="w-full sm:w-auto">
                   <Trash2 />
                   Delete
                 </Button>
@@ -378,13 +390,13 @@ export function EditItemForm({ item }: { item: Item }) {
               </DialogContent>
             </Dialog>
 
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" type="button">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+              <Button asChild variant="outline" type="button" className="w-full sm:w-auto">
                 <Link href="/items">Cancel</Link>
               </Button>
               <Button
                 type="submit"
-                className="bg-[#E91E63] text-white hover:bg-[#C2185B]"
+                className="w-full bg-[#EC4899] text-white hover:bg-[#BE185D] sm:w-auto"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Saving…" : "Save item"}

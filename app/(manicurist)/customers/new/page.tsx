@@ -73,15 +73,15 @@ export default function NewCustomerPage() {
       <div className="space-y-2">
         <Link
           href="/customers"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#E91E63]"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#EC4899]"
         >
           <ArrowLeft className="size-4" />
           Back to customers
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#2D2D2D]">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#3D1A2A] sm:text-3xl">
           Add Customer
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground sm:text-base">
           Backfill a record from past visits or walk-ins.
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function NewCustomerPage() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-5 rounded-xl border border-[#F8BBD0] bg-white p-6"
+          className="space-y-5 rounded-xl border border-[#F8BBD0] bg-white p-4 sm:p-6"
         >
           <FormField
             control={form.control}
@@ -115,6 +115,7 @@ export default function NewCustomerPage() {
                   <FormControl>
                     <Input
                       type="tel"
+                      inputMode="tel"
                       autoComplete="tel"
                       {...field}
                       value={field.value ?? ""}
@@ -133,7 +134,11 @@ export default function NewCustomerPage() {
                   <FormControl>
                     <Input
                       type="email"
+                      inputMode="email"
                       autoComplete="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -154,7 +159,7 @@ export default function NewCustomerPage() {
                     type="checkbox"
                     checked={!!field.value}
                     onChange={(e) => field.onChange(e.target.checked)}
-                    className="h-4 w-4 rounded border-input accent-[#E91E63]"
+                    className="h-5 w-5 rounded border-input accent-[#EC4899] md:h-4 md:w-4"
                   />
                 </FormControl>
                 <FormLabel className="!mt-0 font-normal">
@@ -210,6 +215,7 @@ export default function NewCustomerPage() {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min={0}
                       step={1}
                       {...field}
@@ -236,6 +242,7 @@ export default function NewCustomerPage() {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       min={0}
                       step="0.01"
                       {...field}
@@ -259,13 +266,13 @@ export default function NewCustomerPage() {
             <p className="text-sm text-destructive">{submitError}</p>
           )}
 
-          <div className="flex items-center justify-end gap-2">
-            <Button asChild variant="outline" type="button">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <Button asChild variant="outline" type="button" className="w-full sm:w-auto">
               <Link href="/customers">Cancel</Link>
             </Button>
             <Button
               type="submit"
-              className="bg-[#E91E63] text-white hover:bg-[#C2185B]"
+              className="w-full bg-[#EC4899] text-white hover:bg-[#BE185D] sm:w-auto"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting ? "Saving…" : "Save customer"}

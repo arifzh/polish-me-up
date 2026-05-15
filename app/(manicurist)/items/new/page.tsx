@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ImageDropzone } from "@/components/manicurist/ImageDropzone";
 import { itemSchema, type ItemInput } from "@/lib/validations/item.schema";
 import { createClient } from "@/lib/supabase/client";
 
@@ -45,7 +46,7 @@ export default function NewItemPage() {
       stock: null,
       duration_min: null,
       is_active: true,
-      photo_url: "",
+      photo_urls: [],
     },
   });
 
@@ -61,7 +62,8 @@ export default function NewItemPage() {
       stock: values.stock ?? null,
       duration_min: values.duration_min ?? null,
       is_active: values.is_active,
-      photo_url: values.photo_url ?? null,
+      photo_urls: values.photo_urls ?? [],
+      photo_url: values.photo_urls?.[0] ?? null,
     });
 
     if (error) {
@@ -78,15 +80,15 @@ export default function NewItemPage() {
       <div className="space-y-2">
         <Link
           href="/items"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#E91E63]"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#EC4899]"
         >
           <ArrowLeft className="size-4" />
           Back to items
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#2D2D2D]">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#3D1A2A] sm:text-3xl">
           Add Item
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground sm:text-base">
           Create a new package or add-on for your menu.
         </p>
       </div>
@@ -94,7 +96,7 @@ export default function NewItemPage() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-5 rounded-xl border border-[#F8BBD0] bg-white p-6"
+          className="space-y-5 rounded-xl border border-[#F8BBD0] bg-white p-4 sm:p-6"
         >
           <FormField
             control={form.control}
@@ -164,6 +166,7 @@ export default function NewItemPage() {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       min={0}
                       step="0.01"
                       {...field}
@@ -188,6 +191,7 @@ export default function NewItemPage() {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       min={0}
                       step="0.01"
                       {...field}
@@ -215,6 +219,7 @@ export default function NewItemPage() {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min={1}
                       step={1}
                       {...field}
@@ -242,6 +247,7 @@ export default function NewItemPage() {
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min={1}
                       step={1}
                       {...field}
@@ -261,20 +267,19 @@ export default function NewItemPage() {
 
           <FormField
             control={form.control}
-            name="photo_url"
+            name="photo_urls"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Photo URL</FormLabel>
+                <FormLabel>Photos</FormLabel>
                 <FormControl>
-                  <Input
-                    type="url"
-                    placeholder="https://…"
-                    {...field}
-                    value={field.value ?? ""}
+                  <ImageDropzone
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    max={3}
                   />
                 </FormControl>
                 <FormDescription>
-                  Paste image URL (Supabase Storage upload coming later).
+                  Up to 3 images. The first photo is shown as the cover.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -291,7 +296,7 @@ export default function NewItemPage() {
                     type="checkbox"
                     checked={!!field.value}
                     onChange={(e) => field.onChange(e.target.checked)}
-                    className="h-4 w-4 rounded border-input accent-[#E91E63]"
+                    className="h-5 w-5 rounded border-input accent-[#EC4899] md:h-4 md:w-4"
                   />
                 </FormControl>
                 <FormLabel className="!mt-0 font-normal">
@@ -305,13 +310,13 @@ export default function NewItemPage() {
             <p className="text-sm text-destructive">{submitError}</p>
           )}
 
-          <div className="flex items-center justify-end gap-2">
-            <Button asChild variant="outline" type="button">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <Button asChild variant="outline" type="button" className="w-full sm:w-auto">
               <Link href="/items">Cancel</Link>
             </Button>
             <Button
               type="submit"
-              className="bg-[#E91E63] text-white hover:bg-[#C2185B]"
+              className="w-full bg-[#EC4899] text-white hover:bg-[#BE185D] sm:w-auto"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting ? "Saving…" : "Save item"}

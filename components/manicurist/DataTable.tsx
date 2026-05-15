@@ -31,6 +31,12 @@ type DataTableProps<T> = {
   actions?: (row: T) => React.ReactNode;
   pageSize?: number;
   emptyMessage?: string;
+  /**
+   * Optional renderer for narrow viewports. When provided, the table is
+   * hidden on <md and a stack of these cards renders instead. Pagination
+   * and search behave the same in both layouts.
+   */
+  mobileCard?: (row: T) => React.ReactNode;
 };
 
 export function DataTable<T>({
@@ -42,6 +48,7 @@ export function DataTable<T>({
   actions,
   pageSize = 10,
   emptyMessage = "No records found",
+  mobileCard,
 }: DataTableProps<T>) {
   const [query, setQuery] = React.useState("");
   const [page, setPage] = React.useState(0);
@@ -79,16 +86,75 @@ export function DataTable<T>({
         </div>
       )}
 
-      <div className="rounded-xl border border-[#F8BBD0] bg-white">
+      {mobileCard && (
+        <div className="space-y-3 md:hidden">
+          {pageRows.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[#F8BBD0] bg-white/70 p-8 text-muted-foreground">
+              <Inbox className="size-6" />
+              <span className="text-sm">{emptyMessage}</span>
+            </div>
+          ) : (
+            pageRows.map((row, idx) => (
+              <div
+                key={idx}
+                role={onRowClick ? "button" : undefined}
+                tabIndex={onRowClick ? 0 : undefined}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onRowClick(row);
+                        }
+                      }
+                    : undefined
+                }
+                className={cn(
+                  "rounded-2xl border border-[#F8BBD0] bg-white/95 p-4 shadow-[0_4px_18px_-12px_rgba(236,72,153,0.3)] backdrop-blur-sm",
+                  onRowClick && "cursor-pointer active:scale-[0.99]",
+                )}
+              >
+                {mobileCard(row)}
+                {actions && (
+                  <div
+                    className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-[#F8BBD0]/60 pt-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {actions(row)}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "overflow-hidden rounded-2xl border border-[#F8BBD0] bg-white/90 shadow-sm backdrop-blur-sm",
+          mobileCard && "hidden md:block",
+        )}
+      >
         <Table>
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="bg-gradient-to-r from-[#FFE4EC] to-[#FFD1DC]">
+            <TableRow className="border-b-[#F8BBD0]/60 hover:bg-transparent">
               {columns.map((col) => (
-                <TableHead key={col.key} className={col.className}>
+                <TableHead
+                  key={col.key}
+                  className={cn(
+                    "px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#BE185D]",
+                    col.className,
+                  )}
+                >
                   {col.header}
                 </TableHead>
               ))}
-              {actions && <TableHead className="w-px text-right">Actions</TableHead>}
+              {actions && (
+                <TableHead className="w-px px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-[#BE185D]">
+                  Actions
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -108,17 +174,23 @@ export function DataTable<T>({
               pageRows.map((row, idx) => (
                 <TableRow
                   key={idx}
-                  className={cn(onRowClick && "cursor-pointer")}
+                  className={cn(
+                    "border-t border-[#F8BBD0]/40 transition-colors hover:bg-[#FFF5F8]/50",
+                    onRowClick && "cursor-pointer",
+                  )}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                 >
                   {columns.map((col) => (
-                    <TableCell key={col.key} className={col.className}>
+                    <TableCell
+                      key={col.key}
+                      className={cn("px-4 py-3 text-[#3D1A2A]", col.className)}
+                    >
                       {col.cell(row)}
                     </TableCell>
                   ))}
                   {actions && (
                     <TableCell
-                      className="text-right"
+                      className="px-4 py-3 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {actions(row)}
@@ -132,7 +204,7 @@ export function DataTable<T>({
       </div>
 
       {filtered.length > 0 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground sm:text-sm">
           <span>
             Showing {showingFrom}-{showingTo} of {filtered.length}
           </span>
@@ -143,10 +215,10 @@ export function DataTable<T>({
               disabled={safePage === 0}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
             >
-              Previous
+              Prev
             </Button>
-            <span>
-              Page {safePage + 1} of {totalPages}
+            <span className="whitespace-nowrap">
+              {safePage + 1} / {totalPages}
             </span>
             <Button
               variant="outline"

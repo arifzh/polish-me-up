@@ -28,7 +28,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-GB", {
 });
 
 function formatDate(value: string | null) {
-  if (!value) return "—";
+  if (!value) return "-";
   return dateFormatter.format(new Date(value));
 }
 
@@ -39,7 +39,7 @@ function SourceBadge({ source }: { source: Customer["source"] }) {
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
         isSystem
-          ? "bg-[#FDF2F4] text-[#E91E63] ring-1 ring-[#F8BBD0]"
+          ? "bg-[#FFF5F8] text-[#EC4899] ring-1 ring-[#F8BBD0]"
           : "bg-muted text-muted-foreground ring-1 ring-border",
       )}
     >
@@ -60,7 +60,7 @@ function Field({
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="text-sm text-[#2D2D2D]">{children}</p>
+      <p className="text-sm text-[#3D1A2A]">{children}</p>
     </div>
   );
 }
@@ -87,7 +87,7 @@ export default async function CustomerDetailPage({
       <div>
         <Link
           href="/customers"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#E91E63]"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#EC4899]"
         >
           <ArrowLeft className="size-4" />
           Back to customers
@@ -96,22 +96,24 @@ export default async function CustomerDetailPage({
 
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
             <div className="space-y-1">
-              <CardTitle className="text-2xl text-[#2D2D2D]">
+              <CardTitle className="text-xl text-[#3D1A2A] sm:text-2xl">
                 {customer.full_name}
               </CardTitle>
               <CardDescription>
                 Added {formatDate(customer.created_at)}
               </CardDescription>
             </div>
-            <SourceBadge source={customer.source} />
+            <div>
+              <SourceBadge source={customer.source} />
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Phone">{customer.phone ?? "—"}</Field>
-            <Field label="Email">{customer.email ?? "—"}</Field>
+        <CardContent className="space-y-5 sm:space-y-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <Field label="Phone">{customer.phone ?? "-"}</Field>
+            <Field label="Email">{customer.email ?? "-"}</Field>
             <Field label="Student">
               {customer.is_student ? "Yes" : "No"}
             </Field>
@@ -120,7 +122,7 @@ export default async function CustomerDetailPage({
             </Field>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
             <Field label="Total visits">{customer.total_visits ?? 0}</Field>
             <Field label="Total spent">
               {currency.format(Number(customer.total_spent ?? 0))}

@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   CreditCard,
+  ExternalLink,
   Mail,
   MapPin,
   Phone,
   User,
   X,
 } from "lucide-react";
+
+import { MiniMap } from "@/components/manicurist/MiniMap";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -122,6 +125,18 @@ export function BookingDetailDialog({
   const lines = normalizeLines(booking);
   const next = nextStatus(status);
 
+  const hasCoords =
+    booking.address_lat != null &&
+    booking.address_lng != null &&
+    !Number.isNaN(Number(booking.address_lat)) &&
+    !Number.isNaN(Number(booking.address_lng));
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+  const googleMapsHref = hasCoords
+    ? `https://www.google.com/maps/search/?api=1&query=${booking.address_lat},${booking.address_lng}`
+    : booking.address
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
+      : "";
+
   async function advance() {
     if (!next || !booking) return;
     setError(null);
@@ -175,7 +190,7 @@ export function BookingDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="max-h-[92vh] overflow-y-auto sm:max-w-2xl"
         showCloseButton
       >
         <DialogHeader>
@@ -193,70 +208,131 @@ export function BookingDetailDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            <section className="space-y-2 rounded-lg border border-[#F8BBD0] bg-[#FDF2F4]/40 p-3">
-              <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[#E91E63]">
+            <section className="space-y-2 rounded-xl border border-[#F8BBD0] bg-[#FFF5F8]/60 p-4">
+              <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#BE185D]">
                 <User className="size-3.5" />
                 Customer
               </h3>
-              <p className="font-medium text-[#2D2D2D]">
-                {customer?.full_name ?? "—"}
+              <p className="font-medium text-[#3D1A2A]">
+                {customer?.full_name ?? "-"}
               </p>
               {customer?.email && (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-xs text-[#5C2D48]/70">
                   <Mail className="size-3" />
                   {customer.email}
                 </p>
               )}
               {customer?.phone && (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-xs text-[#5C2D48]/70">
                   <Phone className="size-3" />
                   {customer.phone}
                 </p>
               )}
             </section>
 
-            <section className="space-y-2 rounded-lg border border-[#F8BBD0] bg-[#FDF2F4]/40 p-3">
-              <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[#E91E63]">
+            <section className="space-y-2 rounded-xl border border-[#F8BBD0] bg-[#FFF5F8]/60 p-4">
+              <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#BE185D]">
                 <User className="size-3.5" />
                 Manicurist
               </h3>
-              <p className="font-medium text-[#2D2D2D]">{manicuristName}</p>
-              <h3 className="flex items-center gap-1.5 pt-1 text-xs font-semibold uppercase tracking-wide text-[#E91E63]">
+              <p className="font-medium text-[#3D1A2A]">{manicuristName}</p>
+              <h3 className="flex items-center gap-1.5 pt-2 text-[11px] font-semibold uppercase tracking-wider text-[#BE185D]">
                 <MapPin className="size-3.5" />
                 Location
               </h3>
-              <p className="text-sm text-[#2D2D2D]">
+              <p className="text-sm text-[#3D1A2A]">
                 {LOCATION_LABELS[booking.location_type]}
               </p>
               {booking.address && (
-                <p className="text-xs text-muted-foreground">{booking.address}</p>
+                <p className="whitespace-pre-line text-xs text-[#5C2D48]/70">
+                  {booking.address}
+                </p>
+              )}
+              {hasCoords && (
+                <a
+                  href={googleMapsHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[#BE185D] hover:underline"
+                >
+                  Open in Google Maps
+                  <ExternalLink className="size-3" />
+                </a>
               )}
             </section>
           </div>
+
+          {hasCoords && mapboxToken && (
+            <section className="space-y-2">
+              <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5C2D48]">
+                <MapPin className="size-3.5 text-[#EC4899]" />
+                Service location
+              </h3>
+              <MiniMap
+                lat={Number(booking.address_lat)}
+                lng={Number(booking.address_lng)}
+                token={mapboxToken}
+              />
+              <p className="text-[11px] text-[#5C2D48]/60">
+                {Number(booking.address_lat).toFixed(5)},{" "}
+                {Number(booking.address_lng).toFixed(5)}
+              </p>
+            </section>
+          )}
 
           {booking.notes && (
             <section className="space-y-1">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Notes
               </h3>
-              <p className="text-sm text-[#2D2D2D]">{booking.notes}</p>
+              <p className="text-sm text-[#3D1A2A]">{booking.notes}</p>
             </section>
           )}
 
-          <section className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <section className="space-y-3">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[#5C2D48]">
               Line items
             </h3>
-            <div className="overflow-hidden rounded-lg border border-[#F8BBD0]">
+
+            {/* Mobile: card list */}
+            <ul className="space-y-2 sm:hidden">
+              {lines.length === 0 ? (
+                <li className="rounded-xl border border-dashed border-[#F8BBD0] bg-[#FFF5F8]/40 px-4 py-4 text-center text-xs text-[#5C2D48]/70">
+                  No line items
+                </li>
+              ) : (
+                lines.map((line) => (
+                  <li
+                    key={line.id}
+                    className="flex items-start justify-between gap-3 rounded-xl border border-[#F8BBD0]/60 bg-[#FFF5F8]/60 px-3 py-2.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[#3D1A2A]">
+                        {line.name}
+                      </p>
+                      <p className="text-[11px] text-[#5C2D48]/70">
+                        {formatMYR(line.unit_price)} × {line.quantity}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-[#3D1A2A]">
+                      {formatMYR(line.subtotal)}
+                    </span>
+                  </li>
+                ))
+              )}
+            </ul>
+
+            {/* Desktop: table */}
+            <div className="hidden overflow-hidden rounded-xl border border-[#F8BBD0] sm:block">
               <table className="w-full text-sm">
-                <thead className="bg-[#FDF2F4] text-left text-xs font-medium text-[#E91E63]">
+                <thead className="bg-gradient-to-r from-[#FFE4EC] to-[#FFD1DC] text-left text-[10px] font-bold uppercase tracking-wider text-[#BE185D]">
                   <tr>
-                    <th className="px-3 py-2">Item</th>
-                    <th className="px-3 py-2">Qty</th>
-                    <th className="px-3 py-2">Unit price</th>
-                    <th className="px-3 py-2 text-right">Subtotal</th>
+                    <th className="px-4 py-2.5">Item</th>
+                    <th className="px-4 py-2.5">Qty</th>
+                    <th className="px-4 py-2.5">Unit price</th>
+                    <th className="px-4 py-2.5 text-right">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -264,7 +340,7 @@ export function BookingDetailDialog({
                     <tr>
                       <td
                         colSpan={4}
-                        className="px-3 py-4 text-center text-xs text-muted-foreground"
+                        className="px-4 py-5 text-center text-xs text-[#5C2D48]/70"
                       >
                         No line items
                       </td>
@@ -273,14 +349,14 @@ export function BookingDetailDialog({
                     lines.map((line) => (
                       <tr
                         key={line.id}
-                        className="border-t border-[#F8BBD0]/60 text-[#2D2D2D]"
+                        className="border-t border-[#F8BBD0]/40 text-[#3D1A2A] transition-colors hover:bg-[#FFF5F8]/50"
                       >
-                        <td className="px-3 py-2">{line.name}</td>
-                        <td className="px-3 py-2">{line.quantity}</td>
-                        <td className="px-3 py-2">
+                        <td className="px-4 py-2.5">{line.name}</td>
+                        <td className="px-4 py-2.5">{line.quantity}</td>
+                        <td className="px-4 py-2.5">
                           {formatMYR(line.unit_price)}
                         </td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-4 py-2.5 text-right font-medium">
                           {formatMYR(line.subtotal)}
                         </td>
                       </tr>
@@ -290,13 +366,13 @@ export function BookingDetailDialog({
               </table>
             </div>
 
-            <div className="space-y-1 rounded-lg border border-[#F8BBD0] bg-white p-3 text-sm">
-              <div className="flex justify-between text-muted-foreground">
+            <div className="space-y-1.5 rounded-xl border border-[#F8BBD0] bg-white/90 p-4 text-sm backdrop-blur-sm">
+              <div className="flex justify-between text-[#5C2D48]/80">
                 <span>Subtotal</span>
                 <span>{formatMYR(Number(booking.subtotal ?? 0))}</span>
               </div>
               {Number(booking.discount_amount ?? 0) > 0 && (
-                <div className="flex justify-between text-[#E91E63]">
+                <div className="flex justify-between text-[#BE185D]">
                   <span>
                     Discount{" "}
                     {booking.discount_type && booking.discount_type !== "none"
@@ -306,25 +382,27 @@ export function BookingDetailDialog({
                   <span>−{formatMYR(Number(booking.discount_amount))}</span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-[#F8BBD0] pt-1 font-semibold text-[#2D2D2D]">
+              <div className="flex justify-between border-t border-[#F8BBD0] pt-2 font-semibold text-[#3D1A2A]">
                 <span>Total</span>
-                <span>{formatMYR(Number(booking.total ?? 0))}</span>
+                <span className="text-base">
+                  {formatMYR(Number(booking.total ?? 0))}
+                </span>
               </div>
             </div>
           </section>
 
-          <section className="space-y-2 rounded-lg border border-[#F8BBD0] bg-white p-3">
-            <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[#E91E63]">
+          <section className="space-y-3 rounded-xl border border-[#F8BBD0] bg-white/90 p-4 backdrop-blur-sm">
+            <h3 className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#BE185D]">
               <CreditCard className="size-3.5" />
               Payment
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Select
                 value={payment}
                 onValueChange={(v) => changePayment(v as PaymentStatus)}
                 disabled={pending}
               >
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-44">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -333,8 +411,8 @@ export function BookingDetailDialog({
                   <SelectItem value="refunded">Refunded</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-xs text-muted-foreground">
-                Current: {payment}
+              <span className="text-xs text-[#5C2D48]/70">
+                Current: <span className="font-medium text-[#3D1A2A]">{payment}</span>
               </span>
             </div>
           </section>
@@ -346,12 +424,13 @@ export function BookingDetailDialog({
           )}
         </div>
 
-        <DialogFooter className="!flex !flex-row !justify-between gap-2">
+        <DialogFooter className="!flex !flex-col-reverse gap-2 sm:!flex-row sm:!justify-between">
           <Button
             type="button"
             variant="destructive"
             onClick={cancel}
             disabled={pending || !canCancel(status)}
+            className="w-full sm:w-auto"
           >
             <X />
             Cancel booking
@@ -360,7 +439,7 @@ export function BookingDetailDialog({
             type="button"
             onClick={advance}
             disabled={pending || !next}
-            className="bg-[#E91E63] text-white hover:bg-[#C2185B]"
+            className="w-full bg-gradient-to-r from-[#EC4899] to-[#DB2777] text-white shadow-md hover:from-[#DB2777] hover:to-[#BE185D] sm:w-auto"
           >
             <ArrowRight />
             {next

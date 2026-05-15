@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Calendar, DollarSign, Download, ListChecks, TrendingUp } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  DollarSign,
+  Download,
+  ListChecks,
+  SlidersHorizontal,
+  TrendingUp,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +73,7 @@ export function SalesView({ sales }: { sales: SalesRow[] }) {
   const [sourceFilter, setSourceFilter] = React.useState<RecordSource | "all">("all");
   const [dateFrom, setDateFrom] = React.useState<string>("");
   const [dateTo, setDateTo] = React.useState<string>("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
 
   const filtered = React.useMemo(() => {
     return sales.filter((s) => {
@@ -129,12 +138,12 @@ export function SalesView({ sales }: { sales: SalesRow[] }) {
       cell: (row) => {
         const booking = pickBooking(row);
         if (!booking) {
-          return <span className="text-xs text-muted-foreground">—</span>;
+          return <span className="text-xs text-muted-foreground">-</span>;
         }
         return (
           <Link
             href="/bookings"
-            className="font-mono text-xs text-[#E91E63] hover:underline"
+            className="font-mono text-xs text-[#EC4899] hover:underline"
           >
             {booking.booking_number ?? booking.id.slice(0, 8)}
           </Link>
@@ -155,7 +164,7 @@ export function SalesView({ sales }: { sales: SalesRow[] }) {
       key: "net_sales",
       header: "Net",
       cell: (row) => (
-        <span className="font-medium text-[#2D2D2D]">
+        <span className="font-medium text-[#3D1A2A]">
           {formatMYR(Number(row.net_sales ?? 0))}
         </span>
       ),
@@ -179,99 +188,156 @@ export function SalesView({ sales }: { sales: SalesRow[] }) {
       header: "Source",
       cell: (row) => (
         <span className="text-xs uppercase tracking-wide text-muted-foreground">
-          {row.source ?? "—"}
+          {row.source ?? "-"}
         </span>
       ),
     },
   ];
 
+  const filtersActive = sourceFilter !== "all" || dateFrom || dateTo;
+  const activeFilterCount =
+    (sourceFilter !== "all" ? 1 : 0) + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
+
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         <StatsCard
           label="Net Sales"
           value={formatMYR(summary.totalNet)}
           icon={DollarSign}
+          accent="emerald"
         />
         <StatsCard
           label="Gross Profit"
           value={formatMYR(summary.totalProfit)}
           icon={TrendingUp}
+          accent="rose"
         />
         <StatsCard
           label="Bookings"
           value={summary.bookingsCount}
           icon={ListChecks}
+          accent="violet"
         />
         <StatsCard
           label="Average Booking"
           value={formatMYR(summary.avg)}
           icon={Calendar}
+          accent="amber"
         />
       </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-3 rounded-xl border border-[#F8BBD0] bg-white p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Source</label>
-            <Select
-              value={sourceFilter}
-              onValueChange={(v) => setSourceFilter(v as RecordSource | "all")}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All sources</SelectItem>
-                <SelectItem value="system">System</SelectItem>
-                <SelectItem value="manual">Manual</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">From</label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-40"
+      <div className="rounded-2xl border border-[#F8BBD0] bg-white/90 p-4 shadow-sm backdrop-blur-sm sm:p-5">
+        {/* Mobile filter toggle bar */}
+        <div className="flex items-center justify-between gap-2 sm:hidden">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setMobileFiltersOpen((v) => !v)}
+            aria-expanded={mobileFiltersOpen}
+            className="gap-2"
+          >
+            <SlidersHorizontal className="size-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#EC4899] px-1.5 text-[10px] font-bold text-white">
+                {activeFilterCount}
+              </span>
+            )}
+            <ChevronDown
+              className={`size-4 transition-transform ${mobileFiltersOpen ? "rotate-180" : ""}`}
             />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">To</label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="w-40"
-            />
-          </div>
-
-          {(sourceFilter !== "all" || dateFrom || dateTo) && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSourceFilter("all");
-                setDateFrom("");
-                setDateTo("");
-              }}
-            >
-              Reset
-            </Button>
-          )}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleExport}
+            className="bg-white hover:bg-[#FFE4EC]"
+          >
+            <Download />
+            Export
+          </Button>
         </div>
 
-        <Button type="button" variant="secondary" onClick={handleExport}>
-          <Download />
-          Export CSV
-        </Button>
+        <div
+          className={`flex-col gap-4 sm:flex sm:flex-row sm:flex-wrap sm:items-end sm:justify-between ${
+            mobileFiltersOpen ? "mt-4 flex" : "hidden sm:flex"
+          }`}
+        >
+          <div className="grid grid-cols-2 gap-x-3 gap-y-3 sm:flex sm:flex-wrap sm:items-end sm:gap-x-5">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium tracking-wide text-[#5C2D48]">
+                Source
+              </label>
+              <Select
+                value={sourceFilter}
+                onValueChange={(v) => setSourceFilter(v as RecordSource | "all")}
+              >
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All sources</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium tracking-wide text-[#5C2D48]">
+                From
+              </label>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-full px-3 sm:w-44"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium tracking-wide text-[#5C2D48]">
+                To
+              </label>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-full px-3 sm:w-44"
+              />
+            </div>
+
+            {filtersActive && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="col-span-2 sm:col-span-1"
+                onClick={() => {
+                  setSourceFilter("all");
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleExport}
+            className="hidden bg-white hover:bg-[#FFE4EC] sm:inline-flex"
+          >
+            <Download />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="px-1 text-xs text-[#5C2D48]/70">
         Showing {filtered.length} of {sales.length} sales rows
       </p>
 
@@ -279,6 +345,59 @@ export function SalesView({ sales }: { sales: SalesRow[] }) {
         columns={columns}
         data={filtered}
         emptyMessage="No sales match the current filters"
+        mobileCard={(row) => {
+          const booking = pickBooking(row);
+          return (
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-wider text-[#5C2D48]/70">
+                    {formatDate(row.date)}
+                  </p>
+                  {booking ? (
+                    <Link
+                      href="/bookings"
+                      className="block font-mono text-xs text-[#EC4899] hover:underline"
+                    >
+                      {booking.booking_number ?? booking.id.slice(0, 8)}
+                    </Link>
+                  ) : (
+                    <p className="font-mono text-xs text-[#5C2D48]/50">-</p>
+                  )}
+                </div>
+                <span className="pmu-animated-gradient-text shrink-0 text-lg font-bold tracking-tight">
+                  {formatMYR(Number(row.net_sales ?? 0))}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 rounded-lg bg-[#FFF5F8]/60 px-3 py-2 text-center">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C2D48]/70">
+                    Gross
+                  </p>
+                  <p className="text-xs font-semibold text-[#3D1A2A]">
+                    {formatMYR(Number(row.gross_sales ?? 0))}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C2D48]/70">
+                    COGS
+                  </p>
+                  <p className="text-xs font-semibold text-[#3D1A2A]">
+                    {formatMYR(Number(row.cost_of_goods ?? 0))}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C2D48]/70">
+                    Profit
+                  </p>
+                  <p className="text-xs font-semibold text-emerald-700">
+                    {formatMYR(Number(row.gross_profit ?? 0))}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import { BookingsView } from "@/components/manicurist/BookingsView";
+import { PageHeader } from "@/components/manicurist/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function BookingsPage() {
@@ -10,8 +11,11 @@ export default async function BookingsPage() {
        booking_number,
        booking_date,
        booking_time,
+       service_mode,
        location_type,
        address,
+       address_lat,
+       address_lng,
        notes,
        subtotal,
        discount_amount,
@@ -40,14 +44,10 @@ export default async function BookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tight text-[#2D2D2D]">
-          Bookings
-        </h1>
-        <p className="text-muted-foreground">
-          {bookings.length} {bookings.length === 1 ? "booking" : "bookings"} on record
-        </p>
-      </div>
+      <PageHeader
+        title="Bookings"
+        subtitle={`${bookings.length} ${bookings.length === 1 ? "booking" : "bookings"} on record`}
+      />
 
       {error ? (
         <p className="text-sm text-destructive">

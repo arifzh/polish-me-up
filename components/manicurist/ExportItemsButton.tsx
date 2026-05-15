@@ -50,9 +50,12 @@ export function ExportItemsButton() {
         variant="secondary"
         onClick={handleExport}
         disabled={pending}
+        aria-label="Export items CSV"
       >
         <Download />
-        {pending ? "Exporting…" : "Export CSV"}
+        <span className="hidden sm:inline">
+          {pending ? "Exporting…" : "Export CSV"}
+        </span>
       </Button>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
