@@ -42,3 +42,6 @@ next-env.d.ts
 
 .env*
 !.env.example
+
+# internal docs (not shared in the repo)
+/docs/
