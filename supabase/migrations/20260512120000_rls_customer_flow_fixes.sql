@@ -1,11 +1,11 @@
--- Migration: 20260512120000 — Customer flow RLS fixes (patched from production after Phase 7B testing)
+-- Migration: 20260512120000 - Customer flow RLS fixes (patched from production after Phase 7B testing)
 --
 -- Phase 7B browser testing surfaced five RLS gaps in the original schema migration.
 -- They were patched by hand via the Supabase SQL Editor; this file captures them in
 -- source control so a fresh project (local dev, new environment) gets them automatically.
 --
 -- Every policy is wrapped in `drop policy if exists ... ; create policy ...` so the
--- file is safe to re-run. Do NOT execute this against the live database — the
+-- file is safe to re-run. Do NOT execute this against the live database - the
 -- policies already exist there.
 
 -- 1. customers create own record
@@ -65,8 +65,8 @@ create policy "customers insert own booking items"
 -- Fix: the original policy had USING but no WITH CHECK. Postgres treats a
 -- missing WITH CHECK on an UPDATE policy as "no rows may be produced", so
 -- every cancel attempt failed silently. Recreate with both clauses:
---   USING       — the existing row must be pending and owned by the caller
---   WITH CHECK  — the new row must still be owned by the caller, and may be
+--   USING       - the existing row must be pending and owned by the caller
+--   WITH CHECK  - the new row must still be owned by the caller, and may be
 --                 either pending (unchanged) or cancelled
 drop policy if exists "customers cancel own pending bookings" on public.bookings;
 create policy "customers cancel own pending bookings"

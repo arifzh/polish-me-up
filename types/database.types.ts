@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       booking_items: {
@@ -84,6 +59,8 @@ export type Database = {
       bookings: {
         Row: {
           address: string | null
+          address_lat: number | null
+          address_lng: number | null
           booking_date: string
           booking_number: string | null
           booking_time: string | null
@@ -96,6 +73,7 @@ export type Database = {
           manicurist_id: string | null
           notes: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
+          service_mode: Database["public"]["Enums"]["service_mode"] | null
           source: Database["public"]["Enums"]["record_source"] | null
           status: Database["public"]["Enums"]["booking_status"] | null
           subtotal: number
@@ -104,6 +82,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
           booking_date: string
           booking_number?: string | null
           booking_time?: string | null
@@ -116,6 +96,7 @@ export type Database = {
           manicurist_id?: string | null
           notes?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          service_mode?: Database["public"]["Enums"]["service_mode"] | null
           source?: Database["public"]["Enums"]["record_source"] | null
           status?: Database["public"]["Enums"]["booking_status"] | null
           subtotal?: number
@@ -124,6 +105,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
           booking_date?: string
           booking_number?: string | null
           booking_time?: string | null
@@ -136,6 +119,7 @@ export type Database = {
           manicurist_id?: string | null
           notes?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          service_mode?: Database["public"]["Enums"]["service_mode"] | null
           source?: Database["public"]["Enums"]["record_source"] | null
           status?: Database["public"]["Enums"]["booking_status"] | null
           subtotal?: number
@@ -230,7 +214,9 @@ export type Database = {
           margin: number | null
           name: string
           photo_url: string | null
+          photo_urls: string[]
           price: number
+          service_mode: Database["public"]["Enums"]["service_mode"]
           stock: number | null
         }
         Insert: {
@@ -244,7 +230,9 @@ export type Database = {
           margin?: number | null
           name: string
           photo_url?: string | null
+          photo_urls?: string[]
           price: number
+          service_mode?: Database["public"]["Enums"]["service_mode"]
           stock?: number | null
         }
         Update: {
@@ -258,7 +246,9 @@ export type Database = {
           margin?: number | null
           name?: string
           photo_url?: string | null
+          photo_urls?: string[]
           price?: number
+          service_mode?: Database["public"]["Enums"]["service_mode"]
           stock?: number | null
         }
         Relationships: []
@@ -294,6 +284,85 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "manicurist_availability_manicurist_id_fkey"
+            columns: ["manicurist_id"]
+            isOneToOne: false
+            referencedRelation: "manicurists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manicurist_date_overrides: {
+        Row: {
+          created_at: string | null
+          date: string
+          end_time: string | null
+          id: string
+          is_closed: boolean
+          manicurist_id: string
+          note: string | null
+          start_time: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          end_time?: string | null
+          id?: string
+          is_closed?: boolean
+          manicurist_id: string
+          note?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          end_time?: string | null
+          id?: string
+          is_closed?: boolean
+          manicurist_id?: string
+          note?: string | null
+          start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manicurist_date_overrides_manicurist_id_fkey"
+            columns: ["manicurist_id"]
+            isOneToOne: false
+            referencedRelation: "manicurists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manicurist_weekly_schedule: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: string
+          is_closed: boolean
+          manicurist_id: string
+          start_time: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: string
+          is_closed?: boolean
+          manicurist_id: string
+          start_time: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          is_closed?: boolean
+          manicurist_id?: string
+          start_time?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manicurist_weekly_schedule_manicurist_id_fkey"
             columns: ["manicurist_id"]
             isOneToOne: false
             referencedRelation: "manicurists"
@@ -339,7 +408,7 @@ export type Database = {
           {
             foreignKeyName: "manicurists_profile_id_fkey"
             columns: ["profile_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -466,6 +535,44 @@ export type Database = {
           },
         ]
       }
+      saved_addresses: {
+        Row: {
+          address: string
+          created_at: string | null
+          customer_id: string
+          id: string
+          label: string
+          lat: number
+          lng: number
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          label: string
+          lat: number
+          lng: number
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          label?: string
+          lat?: number
+          lng?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_addresses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -486,6 +593,7 @@ export type Database = {
       payment_status: "unpaid" | "paid" | "refunded"
       promotion_type: "student" | "loyalty" | "seasonal"
       record_source: "system" | "manual"
+      service_mode: "mobile" | "walkin" | "both"
       user_role: "customer" | "manicurist"
     }
     CompositeTypes: {
@@ -612,9 +720,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       booking_status: [
@@ -630,6 +735,7 @@ export const Constants = {
       payment_status: ["unpaid", "paid", "refunded"],
       promotion_type: ["student", "loyalty", "seasonal"],
       record_source: ["system", "manual"],
+      service_mode: ["mobile", "walkin", "both"],
       user_role: ["customer", "manicurist"],
     },
   },

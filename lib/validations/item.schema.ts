@@ -4,12 +4,7 @@ const emptyToUndefined = z.literal("").transform(() => undefined);
 
 const optionalString = z.string().trim().optional().or(emptyToUndefined);
 
-const optionalUrl = z
-  .string()
-  .trim()
-  .url("Enter a valid URL")
-  .optional()
-  .or(emptyToUndefined);
+export const MAX_ITEM_PHOTOS = 3;
 
 export const itemSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -30,7 +25,9 @@ export const itemSchema = z.object({
     .positive("Duration must be greater than 0")
     .nullable(),
   is_active: z.boolean(),
-  photo_url: optionalUrl,
+  photo_urls: z
+    .array(z.string().url("Each photo must be a valid URL"))
+    .max(MAX_ITEM_PHOTOS, `Up to ${MAX_ITEM_PHOTOS} photos only`),
 });
 
 export type ItemInput = z.infer<typeof itemSchema>;

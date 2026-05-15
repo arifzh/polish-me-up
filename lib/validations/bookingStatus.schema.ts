@@ -20,7 +20,7 @@ export const PAYMENT_STATUSES: readonly PaymentStatus[] = [
 ];
 
 // Sequential forward transitions. Cancel is allowed from any non-terminal state
-// and is handled as a separate action — it is NOT in this map.
+// and is handled as a separate action - it is NOT in this map.
 const FORWARD_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
   pending: ["confirmed"],
   confirmed: ["in_progress"],

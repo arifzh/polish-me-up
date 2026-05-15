@@ -32,10 +32,12 @@ export const bookingSystemSchema = z
       message: "Date must be today or later",
     }),
     booking_time: hhmm,
-    location_type: z.enum(["home", "booth", "other"], {
-      message: "Choose a location",
+    service_mode: z.enum(["mobile", "walkin"], {
+      message: "Service mode is required",
     }),
     address: z.string().trim().optional(),
+    address_lat: z.number().nullable().optional(),
+    address_lng: z.number().nullable().optional(),
     notes: z.string().trim().optional(),
     is_student: z.boolean(),
     items: z
@@ -43,12 +45,19 @@ export const bookingSystemSchema = z
       .min(1, "Add at least one item to your booking"),
   })
   .superRefine((val, ctx) => {
-    if (val.location_type === "home") {
+    if (val.service_mode === "mobile") {
       if (!val.address || val.address.trim().length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["address"],
-          message: "Address is required for home appointments",
+          message: "Address is required for mobile bookings",
+        });
+      }
+      if (val.address_lat == null || val.address_lng == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["address"],
+          message: "Pin a location on the map first",
         });
       }
     }
